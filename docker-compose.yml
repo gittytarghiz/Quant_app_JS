@@ -1,0 +1,47 @@
+
+services:
+  backend:
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: 1
+      net.ipv6.conf.default.disable_ipv6: 1
+    build:
+      context: .
+      args:
+        APP_UID: "${UID:-1000}"
+        APP_GID: "${GID:-1000}"
+    container_name: quant-backend
+    user: "${UID:-1000}:${GID:-1000}"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./logs:/app/logs:rw
+    ports:
+      - "8000:8000"
+    networks:
+      - quantnet
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        API_URL: "http://backend:8000"
+        NEXT_PUBLIC_API_BASE_URL: "http://localhost:8000"
+    container_name: quant-frontend
+    environment:
+      - NODE_ENV=production
+      - API_URL=http://backend:8000
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    networks:
+      - quantnet
+
+networks:
+  quantnet:
+    driver: bridge
