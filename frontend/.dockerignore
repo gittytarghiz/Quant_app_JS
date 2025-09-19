@@ -1,0 +1,11 @@
+node_modules
+.next
+.turbo
+.cache
+.git
+.gitignore
+*.log
+*.swp
+*.swo
+README.md
+public/*.map
