@@ -7,7 +7,13 @@ import { WeightsTable } from "../../../components/WeightsTable";
 import { deriveFromPnl } from "../../../lib/analytics";
 import { OptimizerNav } from "../../../components/OptimizerNav";
 
-type Resp = { weights: Array<Record<string, string | number | null>>; pnl: Array<{ date: string; pnl: number | null }>; details: any };
+type Resp = {
+  weights: Array<Record<string, string | number | null>>;
+  pnl: Array<{ date: string; pnl: number | null }>;
+  details: any;
+};
+
+const API = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
 export default function NSGA2Page() {
   const [tickers, setTickers] = useState("AMZN, AAPL");
@@ -24,19 +30,38 @@ export default function NSGA2Page() {
   const [err, setErr] = useState<string | null>(null);
 
   async function run() {
-    setLoading(true); setErr(null);
+    setLoading(true);
+    setErr(null);
     try {
-      const res = await fetch(`/opt/nsga2`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tickers: tickers.split(',').map(s => s.trim()).filter(Boolean), start, end, primary_objective: primary, tries: Number(tries), seed: Number(seed), leverage: Number(lev), min_weight: Number(minW), max_weight: Number(maxW) })
+      const res = await fetch(`${API}/opt/nsga2`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tickers: tickers.split(",").map(s => s.trim()).filter(Boolean),
+          start,
+          end,
+          primary_objective: primary,
+          tries: Number(tries),
+          seed: Number(seed),
+          leverage: Number(lev),
+          min_weight: Number(minW),
+          max_weight: Number(maxW),
+        }),
       });
       if (!res.ok) {
         let msg = `HTTP ${res.status} ${res.statusText}`;
-        try { const err = await res.json(); if (err?.detail) msg += ` — ${err.detail}`; } catch {}
+        try {
+          const err = await res.json();
+          if (err?.detail) msg += ` — ${err.detail}`;
+        } catch {}
         throw new Error(msg);
       }
       setData(await res.json());
-    } catch (e: any) { setErr(e.message || String(e)); } finally { setLoading(false); }
+    } catch (e: any) {
+      setErr(e.message || String(e));
+    } finally {
+      setLoading(false);
+    }
   }
 
   const { equityChart, stats } = useMemo(() => deriveFromPnl(data?.pnl), [data]);
@@ -45,7 +70,7 @@ export default function NSGA2Page() {
     <div>
       <OptimizerNav />
       <h2>NSGA-II Tester</h2>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
         <label>Tickers <input value={tickers} onChange={e => setTickers(e.target.value)} style={{ width: 280 }} /></label>
         <label>Start <input type="date" value={start} onChange={e => setStart(e.target.value)} /></label>
         <label>End <input type="date" value={end} onChange={e => setEnd(e.target.value)} /></label>
@@ -56,29 +81,29 @@ export default function NSGA2Page() {
             <option value="calmar">calmar</option>
           </select>
         </label>
-  <label>Tries <input type="number" min={8} max={512} value={tries} onChange={e => setTries(Number(e.target.value||48))} style={{ width: 90 }} /></label>
-  <label>Seed <input type="number" min={0} max={99999} value={seed} onChange={e => setSeed(Number(e.target.value||42))} style={{ width: 90 }} /></label>
+        <label>Tries <input type="number" min={8} max={512} value={tries} onChange={e => setTries(Number(e.target.value||48))} style={{ width: 90 }} /></label>
+        <label>Seed <input type="number" min={0} max={99999} value={seed} onChange={e => setSeed(Number(e.target.value||42))} style={{ width: 90 }} /></label>
         <label>Leverage <input type="number" step={0.1} min={0} value={lev} onChange={e => setLev(Number(e.target.value||1))} style={{ width: 90 }} /></label>
         <label>Min W <input type="number" step={0.01} min={0} max={1} value={minW} onChange={e => setMinW(Number(e.target.value||0))} style={{ width: 90 }} /></label>
         <label>Max W <input type="number" step={0.01} min={0} max={1} value={maxW} onChange={e => setMaxW(Number(e.target.value||1))} style={{ width: 90 }} /></label>
-        
         <button onClick={run} disabled={loading}>Run API</button>
       </div>
       {loading && <p>Loading…</p>}
-      {err && <p style={{ color: 'crimson' }}>Error: {err}</p>}
+      {err && <p style={{ color: "crimson" }}>Error: {err}</p>}
 
       {data && (
         <div style={{ marginTop: 16 }}>
           <h3>PNL</h3>
           <LineChart data={data.pnl as any} />
-          {equityChart.length > 0 && (<>
-            <h3 style={{ marginTop: 16 }}>Equity Curve</h3>
-            <LineChart data={equityChart} />
-          </>)}
+          {equityChart.length > 0 && (
+            <>
+              <h3 style={{ marginTop: 16 }}>Equity Curve</h3>
+              <LineChart data={equityChart} />
+            </>
+          )}
           <StatsGrid stats={stats as any} metrics={(data as any)?.details?.metrics || null} />
           <h3 style={{ marginTop: 16 }}>Weights</h3>
           <WeightsTable rows={data.weights || []} />
-          
         </div>
       )}
     </div>

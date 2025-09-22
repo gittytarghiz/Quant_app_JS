@@ -13,7 +13,7 @@ type EqwResponse = {
   details: Record<string, any>;
 };
 
-const API = process.env.NEXT_PUBLIC_API_BASE_URL || ""; // same-origin if empty
+const API = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000"; // same-origin if empty
 
 export default function EqwPage() {
   const [tickers, setTickers] = useState("AMZN, AAPL");

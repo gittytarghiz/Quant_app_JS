@@ -12,7 +12,7 @@ export default function DataTestPage() {
   const [interval, setInterval] = useState("1d");
   const [out, setOut] = useState<string>("");
   const [loading, setLoading] = useState(false);
-  const API = (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000").replace(/\/$/, "");
+  const API = (process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000").replace(/\/$/, "");
 
   async function ping() {
     setLoading(true); setOut("");

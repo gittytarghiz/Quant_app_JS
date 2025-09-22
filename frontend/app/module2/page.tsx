@@ -74,7 +74,7 @@ export default function Module2Home() {
         </div>
       </div>
 
-      <p style={{ marginTop: 16 }} className="muted">Tip: set <code>NEXT_PUBLIC_API_BASE_URL</code> to your FastAPI server (e.g. http://localhost:8000) if not using same‑origin.</p>
+      <p style={{ marginTop: 16 }} className="muted">Tip: set <code>NEXT_PUBLIC_API_BASE</code> to your FastAPI server (e.g. http://localhost:8000) if not using same‑origin.</p>
     </div>
   );
 }

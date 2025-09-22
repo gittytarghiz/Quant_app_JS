@@ -9,7 +9,7 @@ import { OptimizerNav } from "../../../components/OptimizerNav";
 
 type Resp = { weights: Array<Record<string, string | number | null>>; pnl: Array<{ date: string; pnl: number | null }>; details: any };
 
-const API = (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000").replace(/\/$/, "");
+const API = (process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000");
 
 export default function GAPage() {
   const [tickers, setTickers] = useState("AMZN, AAPL");

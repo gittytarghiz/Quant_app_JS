@@ -7,7 +7,13 @@ import { WeightsTable } from "../../../components/WeightsTable";
 import { deriveFromPnl } from "../../../lib/analytics";
 import { OptimizerNav } from "../../../components/OptimizerNav";
 
-type Resp = { weights: Array<Record<string, string | number | null>>; pnl: Array<{ date: string; pnl: number | null }>; details: any };
+type Resp = {
+  weights: Array<Record<string, string | number | null>>;
+  pnl: Array<{ date: string; pnl: number | null }>;
+  details: any;
+};
+
+const API = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
 export default function MVOTargetPage() {
   const [tickers, setTickers] = useState("AMZN, AAPL");
@@ -24,27 +30,38 @@ export default function MVOTargetPage() {
   const [covEst, setCovEst] = useState("sample");
 
   async function run() {
-    setLoading(true); setErr(null);
+    setLoading(true);
+    setErr(null);
     try {
-      const res = await fetch(`/opt/mvo-target-return`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+      const res = await fetch(`${API}/opt/mvo-target-return`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          tickers: tickers.split(',').map(s => s.trim()).filter(Boolean),
-          start, end,
+          tickers: tickers.split(",").map(s => s.trim()).filter(Boolean),
+          start,
+          end,
           target_return: Number(target),
           cov_shrinkage: Number(covShrink),
           cov_estimator: covEst,
           leverage: Number(lev),
-          min_weight: Number(minW), max_weight: Number(maxW)
-        })
+          min_weight: Number(minW),
+          max_weight: Number(maxW),
+        }),
       });
       if (!res.ok) {
         let msg = `HTTP ${res.status} ${res.statusText}`;
-        try { const err = await res.json(); if (err?.detail) msg += ` — ${err.detail}`; } catch {}
+        try {
+          const err = await res.json();
+          if (err?.detail) msg += ` — ${err.detail}`;
+        } catch {}
         throw new Error(msg);
       }
       setData(await res.json());
-    } catch (e: any) { setErr(e.message || String(e)); } finally { setLoading(false); }
+    } catch (e: any) {
+      setErr(e.message || String(e));
+    } finally {
+      setLoading(false);
+    }
   }
 
   const { equityChart, stats } = useMemo(() => deriveFromPnl(data?.pnl), [data]);
@@ -53,7 +70,7 @@ export default function MVOTargetPage() {
     <div>
       <OptimizerNav />
       <h2>MVO — Target Return Min-Vol</h2>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
         <label>Tickers <input value={tickers} onChange={e => setTickers(e.target.value)} style={{ width: 420 }} /></label>
         <label>Start <input type="date" value={start} onChange={e => setStart(e.target.value)} /></label>
         <label>End <input type="date" value={end} onChange={e => setEnd(e.target.value)} /></label>
@@ -73,7 +90,7 @@ export default function MVOTargetPage() {
         <button onClick={run} disabled={loading}>Run API</button>
       </div>
       {loading && <p>Loading…</p>}
-      {err && <p style={{ color: 'crimson' }}>Error: {err}</p>}
+      {err && <p style={{ color: "crimson" }}>Error: {err}</p>}
 
       {data && (
         <div style={{ marginTop: 16 }}>

@@ -10,3 +10,4 @@ yfinance
 cvxpy
 osqp
 scs
+scikit-learn

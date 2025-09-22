@@ -26,7 +26,7 @@ export default function Home() {
       </div>
 
       <p style={{ marginTop: 24 }} className="muted">
-        Tip: set <code>NEXT_PUBLIC_API_BASE_URL</code> to your FastAPI server (e.g. http://localhost:8000).
+        Tip: set <code>NEXT_PUBLIC_API_BASE</code> to your FastAPI server (e.g. http://localhost:8000).
       </p>
     </div>
   );

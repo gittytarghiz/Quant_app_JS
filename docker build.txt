@@ -1,0 +1,12 @@
+
+docker builder prune -af
+
+# 1. Clean old containers/images/networks (optional but safe)
+docker compose down -v --remove-orphans
+
+# 2. Build fresh images
+docker compose build
+
+# 3. Start both backend + frontend
+docker compose up
+
