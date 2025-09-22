@@ -2,6 +2,7 @@
 import numpy as np, pandas as pd
 from pathlib import Path; import sys
 from scipy.optimize import differential_evolution as de
+from sklearn.covariance import LedoitWolf  # <- added
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.append(str(ROOT))
@@ -63,7 +64,7 @@ def _sortino(r, mar=0.0, ann=252):
     downside = excess[excess < 0.0]
     ds = np.sqrt(np.mean(np.square(downside))) if downside.size else 1e-12
     mean = float(excess.mean())
-    return float((mean / (ds + 1e-12)) * np.sqrt(ann))  # annualized (matches Sharpe style)
+    return float((mean / (ds + 1e-12)) * np.sqrt(ann))
 
 def _calmar(r, ann=252):
     if r.size == 0: return 0.0
@@ -82,7 +83,7 @@ def _ann_return(r, ann=252):
     return float((1.0 + r).prod()**(ann/max(1,len(r))) - 1.0)
 
 def _fitness_from_name(name, w, mu, S, rts, params, w_prev=None, ann=252):
-    r = rts @ w if rts is not None else None  # (T,)
+    r = rts @ w if rts is not None else None
     if name == "min_vol":         return float(np.sqrt(max(w @ S @ w, 1e-18)))
     if name == "max_return":      return -float(w @ mu)
     if name in ("target_return_min_vol","target_min_vol"):
@@ -110,7 +111,7 @@ def _fitness_from_name(name, w, mu, S, rts, params, w_prev=None, ann=252):
         to = 0.05 if w_prev is None else float(np.abs(w - w_prev).sum())
         ar = _ann_return(np.asarray(r), ann=ann)
         return -(ar / (to + 1e-12))
-    return -_sharpe(np.asarray(r), rf=float(params.get("rf",0.0)), ann=ann)  # fallback
+    return -_sharpe(np.asarray(r), rf=float(params.get("rf",0.0)), ann=ann)
 
 def _make_obj(name, mu, S, win_returns, lo, hi, params, w_prev, ann):
     name = (name or "sharpe").lower()
@@ -147,14 +148,16 @@ def walkforward_ga_fast(
 
     bounds=[(lo,hi)]*n; ann = _ann_factor(interval)
     pnl = pd.Series(0.0, index=rets.index, dtype=float)
-    weights_list=[]; w_prev=None  # track levered weights
+    weights_list=[]; w_prev=None
 
     for i,t in enumerate(rbd):
         win = rets.loc[:t]
         if len(win) < min_obs:
             w = _prop_box_sum1(np.full(n,1.0/n), lo, hi)
         else:
-            mu = win.mean().values; S = _stabilize_cov(win.cov().values)
+            mu = win.mean().values
+            # --- Ledoit–Wolf shrinkage covariance ---
+            S = LedoitWolf().fit(win.values).covariance_
             obj = _make_obj(objective, mu, S, win.values, lo, hi, objective_params, w_prev, ann)
             res = de(obj, bounds=bounds, strategy=de_strategy, maxiter=int(de_maxiter), popsize=int(de_popsize),
                      tol=float(de_tol), mutation=de_mutation, recombination=float(de_recombination),
@@ -175,7 +178,7 @@ def walkforward_ga_fast(
         "weights": weights,
         "pnl": pnl.loc[weights.index[0]:],
         "details": {"rebalance_dates": weights.index.tolist(),
-            "config":{"method":"ga_scipy_de_fast_prop","rebalance":rebalance,"interval":interval,
+            "config":{"method":"ga_scipy_de_lw","rebalance":rebalance,"interval":interval,
                       "objective":objective,"objective_params":objective_params,
                       "min_weight":min_weight,"max_weight":max_weight,"costs_bps_total":bps_total,
                       "min_obs":min_obs,"de_maxiter":de_maxiter,"de_popsize":de_popsize,"de_tol":de_tol,
