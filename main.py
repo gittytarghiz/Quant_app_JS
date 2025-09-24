@@ -44,10 +44,7 @@ app = FastAPI(title="Portfolio Optimizers API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "https://quant-app-js.vercel.app",          # production frontend
-        "https://quant-app-38wwfyc47-targhis-projects.vercel.app"  # preview frontend
+        "*"
     ],
     allow_credentials=True,
     allow_methods=["*"],
