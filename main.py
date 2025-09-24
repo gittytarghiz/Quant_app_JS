@@ -43,8 +43,13 @@ app = FastAPI(title="Portfolio Optimizers API")
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
-    allow_credentials=False,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "https://quant-app-js.vercel.app",          # production frontend
+        "https://quant-app-38wwfyc47-targhis-projects.vercel.app"  # preview frontend
+    ],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
 )
@@ -60,7 +65,6 @@ for router in routers:
 @app.get("/")
 async def index():
     """Root endpoint to verify API is working."""
-    import sys
     return {
         "status": "ok",
         "python_version": sys.version,
