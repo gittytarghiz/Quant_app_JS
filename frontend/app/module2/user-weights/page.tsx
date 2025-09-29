@@ -1,11 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { LineChart } from "../../../components/LineChart";
-import { StatsGrid } from "../../../components/StatsGrid";
-import { WeightsTable } from "../../../components/WeightsTable";
-import { deriveFromPnl } from "../../../lib/analytics";
-import { OptimizerNav } from "../../../components/OptimizerNav";
+import { useState } from "react";
+import { OptimizerNav } from "../../../lib/components/OptimizerNav";
+import { Analytics } from "../../../lib/analytics";
 
 type Resp = {
   weights: Array<Record<string, string | number | null>>;
@@ -15,8 +12,8 @@ type Resp = {
 
 function parseWeights(input: string): Record<string, number> {
   const out: Record<string, number> = {};
-  input.split(",").forEach(part => {
-    const [k, v] = part.split(":").map(s => s.trim());
+  input.split(",").forEach((part) => {
+    const [k, v] = part.split(":").map((s) => s.trim());
     if (k && v && !isNaN(Number(v))) out[k.toUpperCase()] = Number(v);
   });
   return out;
@@ -46,7 +43,7 @@ export default function UserWeightsPage() {
         body: JSON.stringify({
           tickers: tickers
             .split(",")
-            .map(s => s.trim().toUpperCase())
+            .map((s) => s.trim().toUpperCase())
             .filter(Boolean),
           start,
           end,
@@ -71,11 +68,6 @@ export default function UserWeightsPage() {
     }
   }
 
-  const { equityChart, stats } = useMemo(
-    () => deriveFromPnl(data?.pnl),
-    [data]
-  );
-
   return (
     <div>
       <OptimizerNav />
@@ -92,7 +84,7 @@ export default function UserWeightsPage() {
           Tickers{" "}
           <input
             value={tickers}
-            onChange={e => setTickers(e.target.value)}
+            onChange={(e) => setTickers(e.target.value)}
             style={{ width: 420 }}
           />
         </label>
@@ -101,7 +93,7 @@ export default function UserWeightsPage() {
           <input
             type="date"
             value={start}
-            onChange={e => setStart(e.target.value)}
+            onChange={(e) => setStart(e.target.value)}
           />
         </label>
         <label>
@@ -109,7 +101,7 @@ export default function UserWeightsPage() {
           <input
             type="date"
             value={end}
-            onChange={e => setEnd(e.target.value)}
+            onChange={(e) => setEnd(e.target.value)}
           />
         </label>
       </div>
@@ -118,7 +110,7 @@ export default function UserWeightsPage() {
           Static Weights{" "}
           <input
             value={weights}
-            onChange={e => setWeights(e.target.value)}
+            onChange={(e) => setWeights(e.target.value)}
             style={{ width: 600 }}
           />
         </label>
@@ -134,7 +126,7 @@ export default function UserWeightsPage() {
             step={0.1}
             min={0}
             value={lev}
-            onChange={e => setLev(Number(e.target.value || 1))}
+            onChange={(e) => setLev(Number(e.target.value || 1))}
             style={{ width: 90 }}
           />
         </label>
@@ -147,20 +139,7 @@ export default function UserWeightsPage() {
 
       {data && (
         <div style={{ marginTop: 16 }}>
-          <h3>PNL</h3>
-          <LineChart data={data.pnl as any} />
-          {equityChart.length > 0 && (
-            <>
-              <h3 style={{ marginTop: 16 }}>Equity Curve</h3>
-              <LineChart data={equityChart} />
-            </>
-          )}
-          <StatsGrid
-            stats={stats as any}
-            metrics={(data as any)?.details?.metrics || null}
-          />
-          <h3 style={{ marginTop: 16 }}>Weights (first 20 rows)</h3>
-          <WeightsTable rows={data.weights || []} />
+          <Analytics data={data} />
         </div>
       )}
     </div>

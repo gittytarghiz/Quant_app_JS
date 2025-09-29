@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 from typing import Any, Optional, Union, Tuple
 from pydantic import Field
-from api.core import OptimizationRequest, OptimizationResponse
-from api.core.utils import format_weights, format_pnl, normalize_details
+from api.core import OptimizationRequest
+from api.core.utils import format_pnl, format_weights, normalize_details
 from portfolio_optimization.walkforward_ga import walkforward_ga_fast
 
 router = APIRouter(prefix="/opt", tags=["opt"])
@@ -21,9 +21,9 @@ class GARequest(OptimizationRequest):
     de_workers: Optional[int] = Field(default=1)
     de_polish: bool = Field(default=False)
 
-@router.post("/ga", response_model=OptimizationResponse)
+@router.post("/ga")
 async def ga(req: GARequest) -> dict[str, Any]:
-    """Genetic Algorithm Optimization"""
+    """Genetic Algorithm Optimization — return PnL + Weights + Details"""
     result = walkforward_ga_fast(
         tickers=req.tickers,
         start=req.start,
@@ -46,11 +46,11 @@ async def ga(req: GARequest) -> dict[str, Any]:
         de_recombination=req.de_recombination,
         de_strategy=req.de_strategy,
         de_workers=req.de_workers,
-        de_polish=req.de_polish
+        de_polish=req.de_polish,
     )
-    
+
     return {
-        "weights": format_weights(result.get("weights")),
         "pnl": format_pnl(result.get("pnl")),
-        "details": normalize_details(result.get("details"))
+        "weights": format_weights(result.get("weights")),
+        "details": normalize_details(result.get("details")),
     }

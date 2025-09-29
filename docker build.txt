@@ -1,8 +1,9 @@
 
-docker builder prune -af
 
-# 1. Clean old containers/images/networks (optional but safe)
-docker compose down -v --remove-orphans
+
+# 1. Clean old apps
+docker system prune -a --volumses
+
 
 # 2. Build fresh images
 docker compose build

@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 from typing import Any
 from pydantic import Field
-from api.core import OptimizationRequest, OptimizationResponse
-from api.core.utils import format_weights, format_pnl, normalize_details
+from api.core import OptimizationRequest
+from api.core.utils import format_pnl, format_weights, normalize_details
 from portfolio_optimization.walkforward_pso import walkforward_pso
 
 router = APIRouter(prefix="/opt", tags=["opt"])
@@ -17,9 +17,9 @@ class PSORequest(OptimizationRequest):
     objective: str = Field(default="sharpe")
     cvar_alpha: float = Field(default=0.05, gt=0, lt=1)
 
-@router.post("/pso", response_model=OptimizationResponse)
+@router.post("/pso")
 async def pso(req: PSORequest) -> dict[str, Any]:
-    """Particle Swarm Optimization"""
+    """Particle Swarm Optimization — return PnL + Weights + Details"""
     result = walkforward_pso(
         tickers=req.tickers,
         start=req.start,
@@ -39,11 +39,11 @@ async def pso(req: PSORequest) -> dict[str, Any]:
         pso_w=req.pso_w,
         pso_seed=req.pso_seed,
         objective=req.objective,
-        cvar_alpha=req.cvar_alpha
+        cvar_alpha=req.cvar_alpha,
     )
-    
+
     return {
-        "weights": format_weights(result.get("weights")),
         "pnl": format_pnl(result.get("pnl")),
-        "details": normalize_details(result.get("details"))
+        "weights": format_weights(result.get("weights")),
+        "details": normalize_details(result.get("details")),
     }

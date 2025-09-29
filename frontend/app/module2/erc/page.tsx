@@ -1,16 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { LineChart } from "../../../components/LineChart";
-import { StatsGrid } from "../../../components/StatsGrid";
-import { WeightsTable } from "../../../components/WeightsTable";
-import { deriveFromPnl } from "../../../lib/analytics";
-import { OptimizerNav } from "../../../components/OptimizerNav";
+import { useState } from "react";
+import { OptimizerNav } from "../../../lib/components/OptimizerNav";
+import { Analytics } from "../../../lib/analytics";
 
 type Resp = {
   weights: Array<Record<string, string | number | null>>;
   pnl: Array<{ date: string; pnl: number | null }>;
-  details: any;
+  details: Record<string, any>;
 };
 
 const API = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
@@ -19,10 +16,10 @@ export default function ERCPage() {
   const [tickers, setTickers] = useState("AMZN, AAPL");
   const [start, setStart] = useState("2020-01-01");
   const [end, setEnd] = useState("2025-01-01");
-  const [loading, setLoading] = useState(false);
   const [lev, setLev] = useState(1);
   const [minW, setMinW] = useState(0);
   const [maxW, setMaxW] = useState(1);
+  const [loading, setLoading] = useState(false);
   const [data, setData] = useState<Resp | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
@@ -34,12 +31,15 @@ export default function ERCPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          tickers: tickers.split(",").map(s => s.trim()).filter(Boolean),
+          tickers: tickers.split(",").map((s) => s.trim()).filter(Boolean),
           start,
           end,
           leverage: Number(lev),
           min_weight: Number(minW),
           max_weight: Number(maxW),
+          dtype: "close",
+          interval: "1d",
+          rebalance: "monthly",
         }),
       });
       if (!res.ok) {
@@ -58,8 +58,6 @@ export default function ERCPage() {
     }
   }
 
-  const { equityChart, stats } = useMemo(() => deriveFromPnl(data?.pnl), [data]);
-
   return (
     <div>
       <OptimizerNav />
@@ -70,13 +68,14 @@ export default function ERCPage() {
           gap: 8,
           flexWrap: "wrap",
           alignItems: "center",
+          marginBottom: 16,
         }}
       >
         <label>
           Tickers{" "}
           <input
             value={tickers}
-            onChange={e => setTickers(e.target.value)}
+            onChange={(e) => setTickers(e.target.value)}
             style={{ width: 420 }}
           />
         </label>
@@ -85,7 +84,7 @@ export default function ERCPage() {
           <input
             type="date"
             value={start}
-            onChange={e => setStart(e.target.value)}
+            onChange={(e) => setStart(e.target.value)}
           />
         </label>
         <label>
@@ -93,7 +92,7 @@ export default function ERCPage() {
           <input
             type="date"
             value={end}
-            onChange={e => setEnd(e.target.value)}
+            onChange={(e) => setEnd(e.target.value)}
           />
         </label>
         <label>
@@ -103,7 +102,7 @@ export default function ERCPage() {
             step={0.1}
             min={0}
             value={lev}
-            onChange={e => setLev(Number(e.target.value || 1))}
+            onChange={(e) => setLev(Number(e.target.value || 1))}
             style={{ width: 90 }}
           />
         </label>
@@ -115,7 +114,7 @@ export default function ERCPage() {
             min={0}
             max={1}
             value={minW}
-            onChange={e => setMinW(Number(e.target.value || 0))}
+            onChange={(e) => setMinW(Number(e.target.value || 0))}
             style={{ width: 90 }}
           />
         </label>
@@ -127,7 +126,7 @@ export default function ERCPage() {
             min={0}
             max={1}
             value={maxW}
-            onChange={e => setMaxW(Number(e.target.value || 1))}
+            onChange={(e) => setMaxW(Number(e.target.value || 1))}
             style={{ width: 90 }}
           />
         </label>
@@ -137,23 +136,9 @@ export default function ERCPage() {
       </div>
       {loading && <p>Loading…</p>}
       {err && <p style={{ color: "crimson" }}>Error: {err}</p>}
-
       {data && (
         <div style={{ marginTop: 16 }}>
-          <h3>PNL</h3>
-          <LineChart data={data.pnl as any} />
-          {equityChart.length > 0 && (
-            <>
-              <h3 style={{ marginTop: 16 }}>Equity Curve</h3>
-              <LineChart data={equityChart} />
-            </>
-          )}
-          <StatsGrid
-            stats={stats as any}
-            metrics={(data as any)?.details?.metrics || null}
-          />
-          <h3 style={{ marginTop: 16 }}>Weights (first 20 rows)</h3>
-          <WeightsTable rows={data.weights || []} />
+          <Analytics data={data} />
         </div>
       )}
     </div>

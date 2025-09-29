@@ -1,0 +1,51 @@
+/* grid.css — extra compact cards, bigger vertical margins */
+
+/* Containers */
+.grid,
+.stats-grid {
+  display: grid;
+  gap: 10px;
+  margin: 24px 0 36px;   /* more space before/after the grid */
+  padding: 0 8px;        /* left/right breathing room */
+}
+
+/* Columns */
+.grid { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+.stats-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+
+/* Ultra-compact cards */
+.grid > *,
+.stats-grid > * {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;                         /* label ↔ value spacing */
+  padding: 6px 8px;                 /* tighter */
+  border: 1px solid var(--primary);
+  border-radius: 8px;
+  background: rgba(96,165,250,0.03);
+  min-height: var(--card-h, 56px);  /* shorter cards */
+}
+
+/* Optional: enforce identical heights */
+.grid.uniform > *,
+.stats-grid.uniform > * {
+  height: var(--card-h, 60px);
+}
+
+/* Text — smaller */
+.stat-label { font-size: 10.5px; color: var(--muted); }
+.stat-value {
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Value color helpers */
+.value-positive { color: var(--accent); }
+.value-negative { color: #f87171; }
+.value-neutral  { color: var(--primary); }
+
+/* Optional extra-compact preset */
+.stats-grid.compact { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }

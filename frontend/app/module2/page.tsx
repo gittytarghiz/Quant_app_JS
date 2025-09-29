@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { OptimizerNav } from "../../components/OptimizerNav";
+import { OptimizerNav } from "../../lib/components/OptimizerNav";
 
 export default function Module2Home() {
   return (
@@ -27,16 +27,8 @@ export default function Module2Home() {
           <p className="muted">Mean-variance with Sharpe/Sortino/Calmar/CVaR, Kelly, diversification. Supports L2 and covariance shrinkage.</p>
           <Link href="/module2/mvo" className="btn">Open</Link>
         </div>
-        <div className="card">
-          <h3>MVO — Target Return <span style={{ color: 'var(--accent)' }}>NEW</span></h3>
-          <p className="muted">Minimize variance subject to expected return ≥ target. Pick sample/diag/Ledoit–Wolf covariances.</p>
-          <Link href="/module2/mvo-target-return" className="btn">Open</Link>
-        </div>
-        <div className="card">
-          <h3>Efficient Frontier <span style={{ color: 'var(--accent)' }}>NEW</span></h3>
-          <p className="muted">Sweep target returns to plot risk/return points and highlight the highest Sharpe solution.</p>
-          <Link href="/module2/frontier" className="btn">Open</Link>
-        </div>
+        
+        
         <div className="card">
           <h3>Min-Variance</h3>
           <p className="muted">Classic minimum variance portfolio using expanding windows.</p>

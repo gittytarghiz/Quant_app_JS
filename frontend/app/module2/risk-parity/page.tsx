@@ -1,11 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { LineChart } from "../../../components/LineChart";
-import { StatsGrid } from "../../../components/StatsGrid";
-import { WeightsTable } from "../../../components/WeightsTable";
-import { deriveFromPnl } from "../../../lib/analytics";
-import { OptimizerNav } from "../../../components/OptimizerNav";
+import { useState } from "react";
+import { OptimizerNav } from "../../../lib/components/OptimizerNav";
+import { Analytics } from "../../../lib/analytics";
 
 type Resp = {
   weights: Array<Record<string, string | number | null>>;
@@ -35,7 +32,7 @@ export default function RiskParityPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          tickers: tickers.split(",").map(s => s.trim()).filter(Boolean),
+          tickers: tickers.split(",").map((s) => s.trim()).filter(Boolean),
           start,
           end,
           leverage: Number(lev),
@@ -60,18 +57,23 @@ export default function RiskParityPage() {
     }
   }
 
-  const { equityChart, stats } = useMemo(() => deriveFromPnl(data?.pnl), [data]);
-
   return (
     <div>
       <OptimizerNav />
       <h2>Risk Parity Tester</h2>
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          flexWrap: "wrap",
+          alignItems: "center",
+        }}
+      >
         <label>
           Tickers{" "}
           <input
             value={tickers}
-            onChange={e => setTickers(e.target.value)}
+            onChange={(e) => setTickers(e.target.value)}
             style={{ width: 420 }}
           />
         </label>
@@ -80,7 +82,7 @@ export default function RiskParityPage() {
           <input
             type="date"
             value={start}
-            onChange={e => setStart(e.target.value)}
+            onChange={(e) => setStart(e.target.value)}
           />
         </label>
         <label>
@@ -88,7 +90,7 @@ export default function RiskParityPage() {
           <input
             type="date"
             value={end}
-            onChange={e => setEnd(e.target.value)}
+            onChange={(e) => setEnd(e.target.value)}
           />
         </label>
         <label>
@@ -98,7 +100,7 @@ export default function RiskParityPage() {
             step={0.1}
             min={0}
             value={lev}
-            onChange={e => setLev(Number(e.target.value || 1))}
+            onChange={(e) => setLev(Number(e.target.value || 1))}
             style={{ width: 90 }}
           />
         </label>
@@ -110,7 +112,7 @@ export default function RiskParityPage() {
             min={0}
             max={1}
             value={minW}
-            onChange={e => setMinW(Number(e.target.value || 0))}
+            onChange={(e) => setMinW(Number(e.target.value || 0))}
             style={{ width: 90 }}
           />
         </label>
@@ -122,13 +124,13 @@ export default function RiskParityPage() {
             min={0}
             max={1}
             value={maxW}
-            onChange={e => setMaxW(Number(e.target.value || 1))}
+            onChange={(e) => setMaxW(Number(e.target.value || 1))}
             style={{ width: 90 }}
           />
         </label>
         <label>
           Cov Estimator
-          <select value={covEst} onChange={e => setCovEst(e.target.value)}>
+          <select value={covEst} onChange={(e) => setCovEst(e.target.value)}>
             <option value="sample">sample</option>
             <option value="diag">diag</option>
             <option value="lw">lw</option>
@@ -143,20 +145,7 @@ export default function RiskParityPage() {
 
       {data && (
         <div style={{ marginTop: 16 }}>
-          <h3>PNL</h3>
-          <LineChart data={data.pnl as any} />
-          {equityChart.length > 0 && (
-            <>
-              <h3 style={{ marginTop: 16 }}>Equity Curve</h3>
-              <LineChart data={equityChart} />
-            </>
-          )}
-          <StatsGrid
-            stats={stats as any}
-            metrics={(data as any)?.details?.metrics || null}
-          />
-          <h3 style={{ marginTop: 16 }}>Weights (first 20 rows)</h3>
-          <WeightsTable rows={data.weights || []} />
+          <Analytics data={data} />
         </div>
       )}
     </div>

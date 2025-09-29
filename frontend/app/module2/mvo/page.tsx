@@ -1,11 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { LineChart } from "../../../components/LineChart";
-import { StatsGrid } from "../../../components/StatsGrid";
-import { WeightsTable } from "../../../components/WeightsTable";
-import { deriveFromPnl } from "../../../lib/analytics";
-import { OptimizerNav } from "../../../components/OptimizerNav";
+import { useState } from "react";
+import { OptimizerNav } from "../../../lib/components/OptimizerNav";
+import { Analytics } from "../../../lib/analytics";
 
 type MvoResponse = {
   weights: Array<Record<string, string | number | null>>;
@@ -34,7 +31,7 @@ export default function MvoPage() {
     setErr(null);
     try {
       const body: any = {
-        tickers: tickers.split(",").map(s => s.trim()).filter(Boolean),
+        tickers: tickers.split(",").map((s) => s.trim()).filter(Boolean),
         start,
         end,
         objective,
@@ -48,7 +45,6 @@ export default function MvoPage() {
       };
 
       const url = `${API}/opt/mvo`;
-      console.log("POST", url, body);
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -63,36 +59,54 @@ export default function MvoPage() {
         throw new Error(msg);
       }
       const json = await res.json();
-      console.log("OK /opt/mvo", json?.details?.metrics, (json?.pnl || []).length);
       setData(json);
     } catch (e: any) {
-      console.error("MVO failed", e);
       setErr(e.message || String(e));
     } finally {
       setLoading(false);
     }
   }
 
-  const { equityChart, stats } = useMemo(() => deriveFromPnl(data?.pnl), [data]);
-
   return (
     <div>
       <OptimizerNav />
-      <h2>MVO Tester</h2>
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+      <h2>MVO Optimizer</h2>
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          flexWrap: "wrap",
+          alignItems: "center",
+          marginBottom: 16,
+        }}
+      >
         <label>
           Tickers{" "}
-          <input value={tickers} onChange={e => setTickers(e.target.value)} style={{ width: 280 }} />
+          <input
+            value={tickers}
+            onChange={(e) => setTickers(e.target.value)}
+            style={{ width: 280 }}
+          />
         </label>
         <label>
-          Start <input type="date" value={start} onChange={e => setStart(e.target.value)} />
+          Start{" "}
+          <input
+            type="date"
+            value={start}
+            onChange={(e) => setStart(e.target.value)}
+          />
         </label>
         <label>
-          End <input type="date" value={end} onChange={e => setEnd(e.target.value)} />
+          End{" "}
+          <input
+            type="date"
+            value={end}
+            onChange={(e) => setEnd(e.target.value)}
+          />
         </label>
         <label>
           Objective
-          <select value={objective} onChange={e => setObjective(e.target.value)}>
+          <select value={objective} onChange={(e) => setObjective(e.target.value)}>
             <option value="min_vol">min_vol</option>
             <option value="max_return">max_return</option>
             <option value="mean_var">mean_var</option>
@@ -105,7 +119,7 @@ export default function MvoPage() {
             step={0.1}
             min={0}
             value={lev}
-            onChange={e => setLev(Number(e.target.value || 1))}
+            onChange={(e) => setLev(Number(e.target.value || 1))}
             style={{ width: 90 }}
           />
         </label>
@@ -117,7 +131,7 @@ export default function MvoPage() {
             min={0}
             max={1}
             value={minW}
-            onChange={e => setMinW(Number(e.target.value || 0))}
+            onChange={(e) => setMinW(Number(e.target.value || 0))}
             style={{ width: 90 }}
           />
         </label>
@@ -129,7 +143,7 @@ export default function MvoPage() {
             min={0}
             max={1}
             value={maxW}
-            onChange={e => setMaxW(Number(e.target.value || 1))}
+            onChange={(e) => setMaxW(Number(e.target.value || 1))}
             style={{ width: 90 }}
           />
         </label>
@@ -140,13 +154,13 @@ export default function MvoPage() {
             step={1}
             min={2}
             value={minObs}
-            onChange={e => setMinObs(Number(e.target.value || 60))}
+            onChange={(e) => setMinObs(Number(e.target.value || 60))}
             style={{ width: 90 }}
           />
         </label>
         <label>
           Rebalance
-          <select value={rebalance} onChange={e => setRebalance(e.target.value)}>
+          <select value={rebalance} onChange={(e) => setRebalance(e.target.value)}>
             <option value="daily">daily</option>
             <option value="weekly">weekly</option>
             <option value="monthly">monthly</option>
@@ -162,17 +176,7 @@ export default function MvoPage() {
 
       {data && (
         <div style={{ marginTop: 16 }}>
-          <h3>PNL</h3>
-          <LineChart data={data.pnl as any} />
-          {equityChart.length > 0 && (
-            <>
-              <h3 style={{ marginTop: 16 }}>Equity Curve</h3>
-              <LineChart data={equityChart} />
-            </>
-          )}
-          <StatsGrid stats={stats as any} metrics={(data as any)?.details?.metrics || null} />
-          <h3 style={{ marginTop: 16 }}>Weights (first 20 rows)</h3>
-          <WeightsTable rows={data.weights || []} />
+          <Analytics data={data} />
         </div>
       )}
     </div>

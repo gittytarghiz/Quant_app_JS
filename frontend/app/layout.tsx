@@ -14,8 +14,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div className="nav-section">Modules</div>
               <ul className="nav-list">
                 <li><Link href="/">Home</Link></li>
-                <li><Link href="/module1">Module 1 — Data</Link></li>
-                <li><Link href="/module2">Module 2 — Optimization</Link></li>
+                <li><Link href="/module1">Module 1: Data</Link></li>
+                <li><Link href="/module2">Module 2: Portfolio Optimization</Link></li>
               </ul>
             </nav>
           </aside>

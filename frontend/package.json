@@ -7,9 +7,13 @@
     "start": "next start -p 3000 -H 0.0.0.0"
   },
   "dependencies": {
-    "next": "14.2.5",
+    "next": "^14.2.33",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "recharts": "^3.2.1",
+    "simple": "^0.2.0",
+    "simple-statistics": "^7.8.8",
+    "statistics": "^3.3.0"
   },
   "devDependencies": {
     "@types/node": "20.11.30",
@@ -17,4 +21,3 @@
     "typescript": "5.4.5"
   }
 }
-
