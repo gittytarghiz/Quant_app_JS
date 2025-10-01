@@ -11,7 +11,7 @@ import {
   Legend,
 } from "recharts";
 
-type WeightRow = { date: any; [k: string]: string | number | null | undefined };
+type WeightRow = { date?: string; [k: string]: string | number | null | undefined };
 
 const toISO = (d: any) => {
   try {

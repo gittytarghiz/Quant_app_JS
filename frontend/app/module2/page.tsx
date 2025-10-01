@@ -8,12 +8,7 @@ export default function Module2Home() {
       <div className="hero">
         <h2 style={{ marginBottom: 4 }}>Module 2 — Portfolio Optimization</h2>
         <div className="muted">Build, backtest, and compare strategies. Choose an optimizer, tune constraints, and review performance.</div>
-        <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <Link href="/module2/mvo" className="btn btn-primary">Run MVO</Link>
-          <Link href="/module2/risk-parity" className="btn">Risk Parity</Link>
-          <Link href="/module2/frontier" className="btn">Efficient Frontier</Link>
-          <Link href="/module2/ga" className="btn">Genetic (DE)</Link>
-        </div>
+        
       </div>
 
       <div className="grid">
