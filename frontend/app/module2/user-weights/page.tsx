@@ -22,7 +22,7 @@ function parseWeights(input: string): Record<string, number> {
 const API = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
 export default function UserWeightsPage() {
-  const [tickers, setTickers] = useState("AMZN, AAPL");
+  const [tickers, setTickers] = useState("AMZN, AAPL, GC=F,NVDA,JNJ");
   const [start, setStart] = useState("2020-01-01");
   const [end, setEnd] = useState("2025-01-01");
   const [weights, setWeights] = useState(
