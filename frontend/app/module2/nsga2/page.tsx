@@ -21,6 +21,7 @@ export default function NSGA2Page() {
   const [seed, setSeed] = useState(42);
   const [loading, setLoading] = useState(false);
   const [lev, setLev] = useState(1);
+  const [intRate, setIntRate] = useState(4.0); // NEW: interest rate (%)
   const [minW, setMinW] = useState(0);
   const [maxW, setMaxW] = useState(1);
   const [data, setData] = useState<Resp | null>(null);
@@ -41,6 +42,7 @@ export default function NSGA2Page() {
           tries: Number(tries),
           seed: Number(seed),
           leverage: Number(lev),
+          interest_rate: intRate / 100.0, // NEW: send as decimal
           min_weight: Number(minW),
           max_weight: Number(maxW),
           dtype: "close",
@@ -139,6 +141,17 @@ export default function NSGA2Page() {
             min={0}
             value={lev}
             onChange={(e) => setLev(Number(e.target.value || 1))}
+            style={{ width: 90 }}
+          />
+        </label>
+        <label>
+          Interest %{" "}
+          <input
+            type="number"
+            step={0.1}
+            min={0}
+            value={intRate}
+            onChange={(e) => setIntRate(Number(e.target.value || 0))}
             style={{ width: 90 }}
           />
         </label>

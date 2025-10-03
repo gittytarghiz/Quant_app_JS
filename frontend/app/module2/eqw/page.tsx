@@ -19,6 +19,7 @@ export default function EqwPage() {
   const [lev, setLev] = useState(1);
   const [minW, setMinW] = useState(0);
   const [maxW, setMaxW] = useState(1);
+  const [intRate, setIntRate] = useState(4.0); // NEW: interest rate (%)
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<EqwResponse | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -37,6 +38,7 @@ export default function EqwPage() {
         dtype: "close",
         interval: "1d",
         rebalance: "monthly",
+        interest_rate: intRate / 100.0, // NEW: convert % → decimal
       };
 
       const url = `${API}/opt/equal-weight`;
@@ -111,6 +113,17 @@ export default function EqwPage() {
             min={0}
             value={lev}
             onChange={(e) => setLev(Number(e.target.value || 1))}
+            style={{ width: 90 }}
+          />
+        </label>
+        <label>
+          Interest %{" "}
+          <input
+            type="number"
+            step={0.1}
+            min={0}
+            value={intRate}
+            onChange={(e) => setIntRate(Number(e.target.value || 0))}
             style={{ width: 90 }}
           />
         </label>

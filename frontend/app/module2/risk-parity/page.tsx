@@ -18,6 +18,7 @@ export default function RiskParityPage() {
   const [end, setEnd] = useState("2025-01-01");
   const [loading, setLoading] = useState(false);
   const [lev, setLev] = useState(1);
+  const [intRate, setIntRate] = useState(4.0); // NEW: interest rate (%)
   const [minW, setMinW] = useState(0);
   const [maxW, setMaxW] = useState(1);
   const [data, setData] = useState<Resp | null>(null);
@@ -36,6 +37,7 @@ export default function RiskParityPage() {
           start,
           end,
           leverage: Number(lev),
+          interest_rate: intRate / 100.0, // NEW: send as decimal
           min_weight: Number(minW),
           max_weight: Number(maxW),
           cov_estimator: covEst,
@@ -105,6 +107,17 @@ export default function RiskParityPage() {
           />
         </label>
         <label>
+          Interest %{" "}
+          <input
+            type="number"
+            step={0.1}
+            min={0}
+            value={intRate}
+            onChange={(e) => setIntRate(Number(e.target.value || 0))}
+            style={{ width: 90 }}
+          />
+        </label>
+        <label>
           Min W{" "}
           <input
             type="number"
@@ -142,7 +155,6 @@ export default function RiskParityPage() {
       </div>
       {loading && <p>Loading…</p>}
       {err && <p style={{ color: "crimson" }}>Error: {err}</p>}
-
       {data && (
         <div style={{ marginTop: 16 }}>
           <Analytics data={data} />

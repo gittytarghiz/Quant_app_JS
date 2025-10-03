@@ -29,6 +29,7 @@ async def mvo(req: MVORequest) -> dict[str, Any]:
         max_weight=req.max_weight,
         min_obs=req.min_obs,
         leverage=req.leverage,
+        interest_rate=req.interest_rate,
         objective=req.objective,
         objective_params=req.objective_params,
     )

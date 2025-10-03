@@ -13,10 +13,11 @@ type Resp = {
 const API = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
 export default function ERCPage() {
-  const [tickers, setTickers] = useState("AMZN, AAPL, GC=F,NVDA,JNJ",);
+  const [tickers, setTickers] = useState("AMZN, AAPL, GC=F,NVDA,JNJ");
   const [start, setStart] = useState("2020-01-01");
   const [end, setEnd] = useState("2025-01-01");
   const [lev, setLev] = useState(1);
+  const [intRate, setIntRate] = useState(4.0); // NEW: interest rate (%)
   const [minW, setMinW] = useState(0);
   const [maxW, setMaxW] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -35,6 +36,7 @@ export default function ERCPage() {
           start,
           end,
           leverage: Number(lev),
+          interest_rate: intRate / 100.0, // NEW: send as decimal
           min_weight: Number(minW),
           max_weight: Number(maxW),
           dtype: "close",
@@ -103,6 +105,17 @@ export default function ERCPage() {
             min={0}
             value={lev}
             onChange={(e) => setLev(Number(e.target.value || 1))}
+            style={{ width: 90 }}
+          />
+        </label>
+        <label>
+          Interest %{" "}
+          <input
+            type="number"
+            step={0.1}
+            min={0}
+            value={intRate}
+            onChange={(e) => setIntRate(Number(e.target.value || 0))}
             style={{ width: 90 }}
           />
         </label>

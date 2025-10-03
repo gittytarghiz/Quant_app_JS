@@ -32,6 +32,7 @@ async def pso(req: PSORequest) -> dict[str, Any]:
         max_weight=req.max_weight,
         min_obs=req.min_obs,
         leverage=req.leverage,
+        interest_rate=req.interest_rate,
         pso_particles=req.pso_particles,
         pso_iters=req.pso_iters,
         pso_c1=req.pso_c1,

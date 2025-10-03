@@ -17,10 +17,11 @@ export default function PSOPage() {
   const [start, setStart] = useState("2020-01-01");
   const [end, setEnd] = useState("2025-01-01");
   const [objective, setObjective] = useState("sharpe");
-  const [loading, setLoading] = useState(false);
   const [lev, setLev] = useState(1);
   const [minW, setMinW] = useState(0);
   const [maxW, setMaxW] = useState(1);
+  const [intRate, setIntRate] = useState(4.0); // NEW: interest rate (%)
+  const [loading, setLoading] = useState(false);
   const [data, setData] = useState<Resp | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
@@ -28,18 +29,21 @@ export default function PSOPage() {
     setLoading(true);
     setErr(null);
     try {
+      const body = {
+        tickers: tickers.split(",").map((s) => s.trim()).filter(Boolean),
+        start,
+        end,
+        objective,
+        leverage: Number(lev),
+        min_weight: Number(minW),
+        max_weight: Number(maxW),
+        interest_rate: intRate / 100.0, // NEW: convert % → decimal
+      };
+
       const res = await fetch(`${API}/opt/pso`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tickers: tickers.split(",").map((s) => s.trim()).filter(Boolean),
-          start,
-          end,
-          objective,
-          leverage: Number(lev),
-          min_weight: Number(minW),
-          max_weight: Number(maxW),
-        }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) {
         let msg = `HTTP ${res.status} ${res.statusText}`;
@@ -95,7 +99,7 @@ export default function PSOPage() {
           />
         </label>
         <label>
-          Objective
+          Objective{" "}
           <select value={objective} onChange={(e) => setObjective(e.target.value)}>
             <option value="sharpe">sharpe</option>
             <option value="sortino">sortino</option>
@@ -115,6 +119,17 @@ export default function PSOPage() {
             min={0}
             value={lev}
             onChange={(e) => setLev(Number(e.target.value || 1))}
+            style={{ width: 90 }}
+          />
+        </label>
+        <label>
+          Interest %{" "}
+          <input
+            type="number"
+            step={0.1}
+            min={0}
+            value={intRate}
+            onChange={(e) => setIntRate(Number(e.target.value || 0))}
             style={{ width: 90 }}
           />
         </label>
@@ -148,7 +163,6 @@ export default function PSOPage() {
       </div>
       {loading && <p>Loading…</p>}
       {err && <p style={{ color: "crimson" }}>Error: {err}</p>}
-
       {data && (
         <div style={{ marginTop: 16 }}>
           <Analytics data={data} />

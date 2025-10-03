@@ -11,6 +11,8 @@ class OptimizationRequest(BaseModel):
     costs: Optional[Dict[str, float]] = None
     min_weight: float = Field(default=0.0, ge=0.0, le=1.0)
     max_weight: float = Field(default=1.0, ge=0.0, le=1.0)
+    interest_rate: float = 0.04   # NEW FIELD
+
     min_obs: int = Field(default=60, ge=0)
     leverage: float = Field(default=1.0, ge=0.0, le=5.0)
 

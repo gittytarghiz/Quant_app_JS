@@ -23,6 +23,7 @@ export default function GAPage() {
   const [alpha, setAlpha] = useState(0.05);
 
   const [lev, setLev] = useState(1);
+  const [intRate, setIntRate] = useState(4.0); // NEW: interest rate (%)
   const [minW, setMinW] = useState(0);
   const [maxW, setMaxW] = useState(1);
   const [interval, setInterval] = useState("1d");
@@ -54,8 +55,8 @@ export default function GAPage() {
         max_weight: Number(maxW),
         min_obs: Number(minObs),
         leverage: Number(lev),
+        interest_rate: intRate / 100.0, // NEW: send as decimal
         objective,
-        // only send if non-empty to keep payload tidy
         ...(Object.keys(objective_params).length ? { objective_params } : {}),
         ...(seed !== undefined ? { seed: Number(seed) } : {}),
       };
@@ -187,6 +188,17 @@ export default function GAPage() {
             min={0}
             value={lev}
             onChange={(e) => setLev(Number(e.target.value || 1))}
+            style={{ width: 90 }}
+          />
+        </label>
+        <label>
+          Interest %{" "}
+          <input
+            type="number"
+            step={0.1}
+            min={0}
+            value={intRate}
+            onChange={(e) => setIntRate(Number(e.target.value || 0))}
             style={{ width: 90 }}
           />
         </label>

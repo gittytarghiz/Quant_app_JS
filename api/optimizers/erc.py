@@ -23,6 +23,7 @@ async def erc(req: OptimizationRequest) -> dict[str, Any]:
         max_weight=req.max_weight,
         min_obs=req.min_obs,
         leverage=req.leverage,
+        interest_rate=req.interest_rate,
     )
 
     return {

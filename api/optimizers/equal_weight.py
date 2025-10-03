@@ -26,6 +26,7 @@ async def equal_weight(req: OptimizationRequest) -> dict[str, Any]:
         min_weight=req.min_weight,
         max_weight=req.max_weight,
         leverage=req.leverage,
+        interest_rate=req.interest_rate,
     )
 
     return {

@@ -18,6 +18,7 @@ export default function MvoPage() {
   const [end, setEnd] = useState("2025-01-01");
   const [objective, setObjective] = useState("min_vol");
   const [lev, setLev] = useState(1);
+  const [intRate, setIntRate] = useState(4.0); // NEW: interest rate (%)
   const [minW, setMinW] = useState(0);
   const [maxW, setMaxW] = useState(1);
   const [minObs, setMinObs] = useState(60);
@@ -36,6 +37,7 @@ export default function MvoPage() {
         end,
         objective,
         leverage: Number(lev),
+        interest_rate: intRate / 100.0, // NEW: send as decimal
         min_weight: Number(minW),
         max_weight: Number(maxW),
         min_obs: Number(minObs),
@@ -120,6 +122,17 @@ export default function MvoPage() {
             min={0}
             value={lev}
             onChange={(e) => setLev(Number(e.target.value || 1))}
+            style={{ width: 90 }}
+          />
+        </label>
+        <label>
+          Interest %{" "}
+          <input
+            type="number"
+            step={0.1}
+            min={0}
+            value={intRate}
+            onChange={(e) => setIntRate(Number(e.target.value || 0))}
             style={{ width: 90 }}
           />
         </label>

@@ -30,6 +30,7 @@ def min_variance(req: MinVarianceRequest) -> dict[str, Any]:
         dtype=req.dtype,
         interval=req.interval,
         rebalance=req.rebalance,
+        interest_rate=req.interest_rate,
         costs=req.costs,
         min_weight=req.min_weight,
         max_weight=req.max_weight,

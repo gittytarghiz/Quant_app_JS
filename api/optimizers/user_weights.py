@@ -33,6 +33,7 @@ async def user_weights(req: UserWeightsRequest) -> dict[str, Any]:
         weights_df=None,
         normalize=True,
         leverage=req.leverage,
+        interest_rate=req.interest_rate,
     )
 
     return {

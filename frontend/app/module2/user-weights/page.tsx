@@ -28,8 +28,9 @@ export default function UserWeightsPage() {
   const [weights, setWeights] = useState(
     "AAPL:0.125, MSFT:0.125, GOOGL:0.125, META:0.125, JNJ:0.125, GC=F:0.125, AMZN:0.125, NVDA:0.125"
   );
-  const [loading, setLoading] = useState(false);
   const [lev, setLev] = useState(1);
+  const [intRate, setIntRate] = useState(4.0); // NEW: interest rate (%)
+  const [loading, setLoading] = useState(false);
   const [data, setData] = useState<Resp | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
@@ -37,20 +38,23 @@ export default function UserWeightsPage() {
     setLoading(true);
     setErr(null);
     try {
+      const body = {
+        tickers: tickers
+          .split(",")
+          .map((s) => s.trim().toUpperCase())
+          .filter(Boolean),
+        start,
+        end,
+        static_weights: parseWeights(weights),
+        normalize: true,
+        leverage: Number(lev),
+        interest_rate: intRate / 100.0, // NEW: convert % → decimal
+      };
+
       const res = await fetch(`${API}/opt/user-weights`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tickers: tickers
-            .split(",")
-            .map((s) => s.trim().toUpperCase())
-            .filter(Boolean),
-          start,
-          end,
-          static_weights: parseWeights(weights),
-          normalize: true,
-          leverage: Number(lev),
-        }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) {
         let msg = `HTTP ${res.status} ${res.statusText}`;
@@ -118,7 +122,7 @@ export default function UserWeightsPage() {
           Format: TICKER:weight comma-separated (e.g., AAPL:0.25, MSFT:0.75)
         </div>
       </div>
-      <div style={{ marginTop: 8 }}>
+      <div style={{ marginTop: 8, display: "flex", gap: 8, alignItems: "center" }}>
         <label>
           Leverage{" "}
           <input
@@ -127,6 +131,17 @@ export default function UserWeightsPage() {
             min={0}
             value={lev}
             onChange={(e) => setLev(Number(e.target.value || 1))}
+            style={{ width: 90 }}
+          />
+        </label>
+        <label>
+          Interest %{" "}
+          <input
+            type="number"
+            step={0.1}
+            min={0}
+            value={intRate}
+            onChange={(e) => setIntRate(Number(e.target.value || 0))}
             style={{ width: 90 }}
           />
         </label>

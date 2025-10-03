@@ -28,6 +28,7 @@ async def risk_parity(req: RiskParityRequest) -> dict[str, Any]:
         max_weight=req.max_weight,
         min_obs=req.min_obs,
         leverage=req.leverage,
+        interest_rate=req.interest_rate,
         cov_estimator=req.cov_estimator,
     )
 

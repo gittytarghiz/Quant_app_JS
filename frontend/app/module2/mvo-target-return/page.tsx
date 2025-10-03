@@ -22,9 +22,11 @@ export default function MVOTargetPage() {
   const [maxW, setMaxW] = useState(1);
   const [target, setTarget] = useState(0.001);
   const [covShrink, setCovShrink] = useState(0);
+  const [covEst, setCovEst] = useState("sample");
+  const [intRate, setIntRate] = useState(4.0); // NEW: interest rate (%)
+
   const [data, setData] = useState<Resp | null>(null);
   const [err, setErr] = useState<string | null>(null);
-  const [covEst, setCovEst] = useState("sample");
 
   async function run() {
     setLoading(true);
@@ -43,6 +45,7 @@ export default function MVOTargetPage() {
           leverage: Number(lev),
           min_weight: Number(minW),
           max_weight: Number(maxW),
+          interest_rate: intRate / 100.0, // NEW: percent → decimal
         }),
       });
       if (!res.ok) {
@@ -128,6 +131,17 @@ export default function MVOTargetPage() {
             min={0}
             value={lev}
             onChange={(e) => setLev(Number(e.target.value || 1))}
+            style={{ width: 90 }}
+          />
+        </label>
+        <label>
+          Interest %{" "}
+          <input
+            type="number"
+            step={0.1}
+            min={0}
+            value={intRate}
+            onChange={(e) => setIntRate(Number(e.target.value || 0))}
             style={{ width: 90 }}
           />
         </label>

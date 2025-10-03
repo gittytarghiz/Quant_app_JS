@@ -30,6 +30,7 @@ async def mvo_target(req: MVOTargetRequest) -> dict[str, Any]:
         max_weight=req.max_weight,
         min_obs=req.min_obs,
         leverage=req.leverage,
+        interest_rate=req.interest_rate,
         target_return=req.target_return,
         cov_shrinkage=req.cov_shrinkage,
         cov_estimator=req.cov_estimator,

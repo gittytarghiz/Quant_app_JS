@@ -26,6 +26,7 @@ export default function FrontierPage() {
   const [minW, setMinW] = useState(0);
   const [maxW, setMaxW] = useState(1);
   const [lev, setLev] = useState(1);
+  const [intRate, setIntRate] = useState(4.0); // NEW interest rate (%)
 
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -45,6 +46,7 @@ export default function FrontierPage() {
         min_weight: Number(minW),
         max_weight: Number(maxW),
         leverage: Number(lev),
+        interest_rate: intRate / 100.0, // NEW: percent → decimal
       };
       const url = `${API}/opt/frontier`;
       const res = await fetch(url, {
@@ -61,7 +63,6 @@ export default function FrontierPage() {
         throw new Error(msg);
       }
       const json = await res.json();
-      // Wrap into Analytics contract
       setData({
         weights: json.weights ?? [],
         pnl: json.pnl ?? [],
@@ -92,7 +93,6 @@ export default function FrontierPage() {
           marginBottom: 16,
         }}
       >
-        {/* inputs same as before */}
         <label>
           Tickers{" "}
           <input
@@ -148,6 +148,17 @@ export default function FrontierPage() {
             min={0}
             value={lev}
             onChange={(e) => setLev(Number(e.target.value || 1))}
+            style={{ width: 90 }}
+          />
+        </label>
+        <label>
+          Interest %{" "}
+          <input
+            type="number"
+            step={0.1}
+            min={0}
+            value={intRate}
+            onChange={(e) => setIntRate(Number(e.target.value || 0))}
             style={{ width: 90 }}
           />
         </label>

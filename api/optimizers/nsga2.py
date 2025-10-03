@@ -27,6 +27,7 @@ async def nsga2(req: NSGA2Request) -> dict[str, Any]:
         max_weight=req.max_weight,
         min_obs=req.min_obs,
         leverage=req.leverage,
+        interest_rate=req.interest_rate,
         tries=req.tries,
         seed=req.seed,
     )
