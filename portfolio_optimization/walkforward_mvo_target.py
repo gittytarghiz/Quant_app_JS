@@ -55,6 +55,7 @@ def walkforward_mvo_target_return(
     dtype="close", interval="1d", rebalance="monthly",
     costs=None, min_weight=0.0, max_weight=1.0, min_obs=60,
     leverage: float = 1.0,
+    interest_rate = 0.04,
     target_return: float = 0.0,
     cov_shrinkage: float = 0.0,
     cov_estimator: str | None = None,
@@ -71,6 +72,8 @@ def walkforward_mvo_target_return(
     Uses cvxpy if available, else Differential Evolution with penalty.
     """
     costs = costs or {}
+    daily_rate = interest_rate / 252
+
     bps = sum(costs.get(k, 0.0) for k in ("bps", "slippage_bps", "spread_bps")) / 1e-4 / 1e4  # keep clarity
     # the line above is equivalent to /1e4; keeping it explicit to avoid mistakes:
     bps = sum(costs.get(k, 0.0) for k in ("bps", "slippage_bps", "spread_bps")) / 1e4
@@ -167,6 +170,12 @@ def walkforward_mvo_target_return(
         tc = (np.abs(wL).sum() if w_prev is None else np.abs(wL - w_prev).sum()) * bps
         if not port.empty:
             port.iloc[0] -= tc
+            # --- Financing penalty ---
+            excess_lev = np.abs(wL).sum() - 1.0
+            if excess_lev > 0:
+                daily_rate = interest_rate / 252  # interest_rate arg, e.g. 0.04
+                port -= excess_lev * daily_rate
+    # --------------------------
             pnl.loc[port.index] = port.values
 
         weights_by_date[t] = wL.copy()

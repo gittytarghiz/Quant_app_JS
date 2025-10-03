@@ -132,6 +132,7 @@ def walkforward_ga_fast(
     leverage: float = 1.0,
     min_weight: float = 0.0,
     max_weight: float = 1.0,
+    interest_rate = 0.04,
     min_obs: int = 60,
     objective: str = "sharpe",
     objective_params=None,
@@ -149,6 +150,8 @@ def walkforward_ga_fast(
         .dropna()
         .copy()
     )
+    daily_rate = interest_rate / 252
+
     missing = [t for t in tickers if t not in prices.columns]
     if missing:
         raise ValueError(f"Missing tickers in data: {missing}")
@@ -201,6 +204,12 @@ def walkforward_ga_fast(
         tc = (np.abs(wL).sum() if w_prev is None else np.abs(wL - w_prev).sum()) * bps
         if not port.empty:
             port.iloc[0] -= tc
+            # --- Financing penalty ---
+            excess_lev = np.abs(wL).sum() - 1.0
+            if excess_lev > 0:
+                daily_rate = interest_rate / 252  # interest_rate arg, e.g. 0.04
+                port -= excess_lev * daily_rate
+    # --------------------------
             pnl.loc[port.index] = port.values
 
         weights_by_date[t] = wL.copy()

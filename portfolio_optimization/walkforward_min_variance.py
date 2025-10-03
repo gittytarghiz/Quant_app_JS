@@ -19,6 +19,7 @@ def walkforward_min_variance(
     costs: dict | None = None,    # {'bps':x,'slippage_bps':y,'spread_bps':z}
     min_weight: float = 0.0,
     max_weight: float = 1.0,
+    interest_rate = 0.04,
     min_obs: int = 60,
     leverage: float = 1.0
 ) -> dict:
@@ -29,6 +30,8 @@ def walkforward_min_variance(
               "details": dict }
     """
     costs = costs or {}
+    daily_rate = interest_rate / 252
+
     bps = float(sum(costs.get(k, 0.0) for k in ("bps", "slippage_bps", "spread_bps"))) / 1e4
 
     # --- data load & enforce ticker order ---
@@ -89,6 +92,12 @@ def walkforward_min_variance(
         tc = (np.abs(wL).sum() if w_prev is None else np.abs(wL - w_prev).sum()) * bps
         if not port.empty:
             port.iloc[0] -= tc
+            # --- Financing penalty ---
+            excess_lev = np.abs(wL).sum() - 1.0
+            if excess_lev > 0:
+                daily_rate = interest_rate / 252  # interest_rate arg, e.g. 0.04
+                port -= excess_lev * daily_rate
+    # --------------------------
             pnl.loc[port.index] = port.values
 
         weights_by_date[t] = wL.copy()  # <-- fix: call copy()

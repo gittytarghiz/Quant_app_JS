@@ -19,6 +19,7 @@ def walkforward_nsga2(
     max_weight=1.0,
     min_obs=60,
     leverage=1.0,
+    interest_rate = 0.04,
     objectives=None,
     pop=64,
     gens=12,
@@ -38,6 +39,8 @@ def walkforward_nsga2(
         .dropna()
         .copy()
     )
+    daily_rate = interest_rate / 252
+
     missing = [t for t in tickers if t not in prices.columns]
     if missing:
         raise ValueError(f"Missing tickers in data: {missing}")
@@ -187,6 +190,12 @@ def walkforward_nsga2(
         tc = (np.abs(wL).sum() if w_prev is None else np.abs(wL - w_prev).sum()) * bps
         if not port.empty:
             port.iloc[0] -= tc
+            # --- Financing penalty ---
+            excess_lev = np.abs(wL).sum() - 1.0
+            if excess_lev > 0:
+                daily_rate = interest_rate / 252  # interest_rate arg, e.g. 0.04
+                port -= excess_lev * daily_rate
+    # --------------------------
             pnl.loc[port.index] = port.values
 
         weights_by_date[t] = wL.copy()

@@ -21,6 +21,7 @@ def walkforward_mvo(
     max_weight: float = 1.0,
     min_obs: int = 60,
     leverage: float = 1.0,
+    interest_rate = 0.04,
     objective: str = "min_vol",   # "min_vol", "max_return", "mean_var"
     objective_params: dict | None = None,
     costs: dict | None = None,
@@ -31,11 +32,14 @@ def walkforward_mvo(
     Returns {"weights": W(DataFrame), "pnl": Series(from first weight date), "details": dict}
     """
     # --- data load & ticker order ---
+    daily_rate = interest_rate / 252
+
     prices = (
         get_downloaded_series(tickers, start, end, dtype=dtype, interval=interval)
         .dropna()
         .copy()
     )
+
     missing = [t for t in tickers if t not in prices.columns]
     if missing:
         raise ValueError(f"Missing tickers in data: {missing}")
@@ -97,6 +101,12 @@ def walkforward_mvo(
         tc = (np.abs(wL).sum() if w_prev is None else np.abs(wL - w_prev).sum()) * bps
         if not port.empty:
             port.iloc[0] -= tc
+            # --- Financing penalty ---
+            excess_lev = np.abs(wL).sum() - 1.0
+            if excess_lev > 0:
+                daily_rate = interest_rate / 252  # interest_rate arg, e.g. 0.04
+                port -= excess_lev * daily_rate
+    # --------------------------
             pnl.loc[port.index] = port.values
 
         weights_by_date[t] = wL.copy()

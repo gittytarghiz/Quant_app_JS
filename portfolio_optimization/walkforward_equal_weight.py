@@ -15,6 +15,7 @@ def walkforward_equal_weight(
     leverage=1.0,
     min_weight=0.0,
     max_weight=1.0,
+    interest_rate = 0.04,
 ):
     # Load & enforce column order == tickers (so rets @ w is correct)
     prices = (
@@ -22,6 +23,7 @@ def walkforward_equal_weight(
         .dropna()
         .copy()
     )
+    daily_rate = interest_rate / 252
     missing = [t for t in tickers if t not in prices.columns]
     if missing:
         raise ValueError(f"Missing tickers in data: {missing}")
@@ -56,7 +58,13 @@ def walkforward_equal_weight(
         if not port.empty:
             tc = (np.abs(w).sum() if i == 0 else np.abs(w - prev).sum()) * bps
             port.iloc[0] -= tc
-            pnl.loc[port.index] = port.values
+
+            # Financing penalty
+            excess_lev = leverage - 1.0
+            if excess_lev > 0:
+                port -= excess_lev * daily_rate
+
+        pnl.loc[port.index] = port.values
         # Store weights exactly at the rebalance timestamp t (aligned to tickers order)
         weights_by_date[t] = w.copy()
         prev = w
