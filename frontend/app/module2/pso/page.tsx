@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { OptimizerNav } from "../../../lib/components/OptimizerNav";
 import { Analytics } from "../../../lib/analytics";
+import AssetPicker from "../../../lib/components/AssetPicker";
 
 type Resp = {
   weights: Array<Record<string, string | number | null>>;
@@ -13,48 +14,61 @@ type Resp = {
 const API = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
 export default function PSOPage() {
-  const [tickers, setTickers] = useState("AMZN, AAPL, GC=F,NVDA,JNJ");
+  const [selectedTickers, setSelectedTickers] = useState<string[]>([]);
   const [start, setStart] = useState("2020-01-01");
   const [end, setEnd] = useState("2025-01-01");
   const [objective, setObjective] = useState("sharpe");
   const [lev, setLev] = useState(1);
   const [minW, setMinW] = useState(0);
   const [maxW, setMaxW] = useState(1);
-  const [intRate, setIntRate] = useState(4.0); // NEW: interest rate (%)
+  const [intRate, setIntRate] = useState(4.0);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<Resp | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
   async function run() {
+    if (selectedTickers.length === 0) {
+      setErr("Please select at least one asset.");
+      return;
+    }
+
     setLoading(true);
     setErr(null);
     try {
       const body = {
-        tickers: tickers.split(",").map((s) => s.trim()).filter(Boolean),
+        tickers: selectedTickers,
         start,
         end,
         objective,
         leverage: Number(lev),
         min_weight: Number(minW),
         max_weight: Number(maxW),
-        interest_rate: intRate / 100.0, // NEW: convert % → decimal
+        interest_rate: intRate / 100.0,
       };
 
-      const res = await fetch(`${API}/opt/pso`, {
+      const url = `${API}/opt/pso`;
+      console.log("POST", url, body);
+
+      const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
+
       if (!res.ok) {
         let msg = `HTTP ${res.status} ${res.statusText}`;
         try {
-          const err = await res.json();
-          if (err?.detail) msg += ` — ${err.detail}`;
+          const errJson = await res.json();
+          if (errJson?.detail) msg += ` — ${errJson.detail}`;
         } catch {}
         throw new Error(msg);
       }
-      setData(await res.json());
+
+      const json = await res.json();
+      console.log("OK /opt/pso", (json?.pnl || []).length);
+      setData(json);
     } catch (e: any) {
+      console.error("PSO failed", e);
       setErr(e.message || String(e));
     } finally {
       setLoading(false);
@@ -62,109 +76,99 @@ export default function PSOPage() {
   }
 
   return (
-    <div>
+    <div className="p-6 text-gray-100 bg-gray-950 min-h-screen">
       <OptimizerNav />
-      <h2>PSO Optimizer</h2>
-      <div
-        style={{
-          display: "flex",
-          gap: 8,
-          flexWrap: "wrap",
-          alignItems: "center",
-          marginBottom: 16,
-        }}
-      >
-        <label>
-          Tickers{" "}
-          <input
-            value={tickers}
-            onChange={(e) => setTickers(e.target.value)}
-            style={{ width: 280 }}
-          />
-        </label>
-        <label>
-          Start{" "}
-          <input
-            type="date"
-            value={start}
-            onChange={(e) => setStart(e.target.value)}
-          />
-        </label>
-        <label>
-          End{" "}
-          <input
-            type="date"
-            value={end}
-            onChange={(e) => setEnd(e.target.value)}
-          />
-        </label>
-        <label>
-          Objective{" "}
-          <select value={objective} onChange={(e) => setObjective(e.target.value)}>
-            <option value="sharpe">sharpe</option>
-            <option value="sortino">sortino</option>
-            <option value="calmar">calmar</option>
-            <option value="cvar">cvar</option>
-            <option value="ret_turnover">ret_turnover</option>
-            <option value="ret_drawdown">ret_drawdown</option>
-            <option value="kelly">kelly</option>
-            <option value="diversification">diversification</option>
-          </select>
-        </label>
-        <label>
-          Leverage{" "}
-          <input
-            type="number"
-            step={0.1}
-            min={0}
-            value={lev}
-            onChange={(e) => setLev(Number(e.target.value || 1))}
-            style={{ width: 90 }}
-          />
-        </label>
-        <label>
-          Interest %{" "}
-          <input
-            type="number"
-            step={0.1}
-            min={0}
-            value={intRate}
-            onChange={(e) => setIntRate(Number(e.target.value || 0))}
-            style={{ width: 90 }}
-          />
-        </label>
-        <label>
-          Min W{" "}
-          <input
-            type="number"
-            step={0.01}
-            min={0}
-            max={1}
-            value={minW}
-            onChange={(e) => setMinW(Number(e.target.value || 0))}
-            style={{ width: 90 }}
-          />
-        </label>
-        <label>
-          Max W{" "}
-          <input
-            type="number"
-            step={0.01}
-            min={0}
-            max={1}
-            value={maxW}
-            onChange={(e) => setMaxW(Number(e.target.value || 1))}
-            style={{ width: 90 }}
-          />
-        </label>
-        <button onClick={run} disabled={loading}>
-          Run API
-        </button>
+      <h2 className="text-xl font-semibold mb-4 text-teal-400">
+        Particle Swarm Optimization (PSO)
+      </h2>
+
+      <div className="flex flex-col gap-6 mb-6">
+        {/* Asset Picker */}
+        <AssetPicker onChange={setSelectedTickers} />
+
+        {/* Parameters */}
+        <div className="flex flex-wrap gap-x-6 gap-y-4 items-end">
+          {[
+            {
+              label: "Start",
+              type: "date",
+              value: start,
+              onChange: (v: any) => setStart(v.target.value),
+            },
+            {
+              label: "End",
+              type: "date",
+              value: end,
+              onChange: (v: any) => setEnd(v.target.value),
+            },
+          ].map((input, idx) => (
+            <label key={idx} className="flex flex-col text-sm text-gray-300">
+              <span className="mb-1">{input.label}</span>
+              <input
+                type={input.type}
+                value={input.value}
+                onChange={input.onChange}
+                className="bg-gray-900 text-white p-2 rounded-md w-28"
+              />
+            </label>
+          ))}
+
+          {/* Objective */}
+          <label className="flex flex-col text-sm text-gray-300">
+            <span className="mb-1">Objective</span>
+            <select
+              value={objective}
+              onChange={(e) => setObjective(e.target.value)}
+              className="bg-gray-900 text-white p-2 rounded-md w-44"
+            >
+              <option value="sharpe">Sharpe</option>
+              <option value="sortino">Sortino</option>
+              <option value="calmar">Calmar</option>
+              <option value="cvar">CVaR</option>
+              <option value="ret_turnover">Return/Turnover</option>
+              <option value="ret_drawdown">Return/Drawdown</option>
+              <option value="kelly">Kelly</option>
+              <option value="diversification">Diversification</option>
+            </select>
+          </label>
+
+          {/* Numeric params */}
+          {[
+            { label: "Leverage", value: lev, set: setLev, step: 0.1 },
+            { label: "Interest %", value: intRate, set: setIntRate, step: 0.1 },
+            { label: "Min W", value: minW, set: setMinW, step: 0.01 },
+            { label: "Max W", value: maxW, set: setMaxW, step: 0.01 },
+          ].map((p, i) => (
+            <label key={i} className="flex flex-col text-sm text-gray-300">
+              <span className="mb-1">{p.label}</span>
+              <input
+                type="number"
+                step={p.step}
+                value={p.value}
+                onChange={(e) => p.set(Number(e.target.value))}
+                className="bg-gray-900 text-white p-2 rounded-md w-24"
+              />
+            </label>
+          ))}
+
+          <button
+            onClick={run}
+            disabled={loading}
+            className={`px-5 py-2 rounded-md font-medium text-white whitespace-nowrap ${
+              loading
+                ? "bg-teal-800 cursor-wait"
+                : "bg-teal-600 hover:bg-teal-500"
+            }`}
+          >
+            {loading ? "Running..." : "Run Optimization"}
+          </button>
+        </div>
       </div>
-      {loading && <p>Loading…</p>}
-      {err && <p style={{ color: "crimson" }}>Error: {err}</p>}
+
+      {err && <p className="text-red-400 mb-2">Error: {err}</p>}
+
       {data && (
-        <div style={{ marginTop: 16 }}>
+        <div className="mt-6">
           <Analytics data={data} />
         </div>
       )}
