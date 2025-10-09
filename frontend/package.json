@@ -7,9 +7,11 @@
     "start": "next start -p 3000 -H 0.0.0.0"
   },
   "dependencies": {
+    "lucide-react": "^0.544.0",
     "next": "^14.2.33",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-window": "^1.8.11",
     "recharts": "^3.2.1",
     "simple": "^0.2.0",
     "simple-statistics": "^7.8.8",

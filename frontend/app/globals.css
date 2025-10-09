@@ -1,4 +1,5 @@
 @import "./styles/grid.css";
+@import "./styles/userweights.css";
 
 :root {
   --bg: #0f1115;
@@ -52,10 +53,11 @@ textarea:focus-visible {
   color: var(--fg);
   font-weight: 600;
   cursor: pointer;
-  display: flex;              /* center text */
+  display: flex;              
   align-items: center;
   justify-content: center;
   transition: border-color .15s, background .15s;
+  white-space: nowrap;         /* prevent split text */
 }
 .btn:hover, button:hover {
   background: #131e31;
@@ -68,7 +70,10 @@ input, select, textarea {
   color: var(--fg);
   border: 1px solid #1b2233;
   border-radius: 8px;
-  padding: 8px 10px;
+  padding: 10px 12px;           /* slightly more breathing room */
+  margin: 2px 4px;              /* light outer spacing for clean separation */
+  line-height: 1.4;
+  white-space: nowrap;          /* prevents label split in tight containers */
 }
 
 /* Subtle text selection */

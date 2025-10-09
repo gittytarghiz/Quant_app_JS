@@ -70,3 +70,10 @@ venv/lib/python*/site-packages/**/llvmlite*/**
 # Large data / CSVs
 scripts/SnP500.csv
 ./scripts
+
+# Local & cache
+__pycache__/
+.env
+*.parquet
+*.csv
+

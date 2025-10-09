@@ -19,6 +19,7 @@ class MinVarianceRequest(BaseModel):
     max_weight: float = Field(default=1.0, ge=0.0, le=1.0)
     min_obs: int = Field(default=60, ge=10)
     leverage: float = Field(default=1.0, ge=0.0, le=5.0)
+    interest_rate: float = Field(default=0.0, ge=-1.0, le=1.0)  # ✅ added field
 
 @router.post("/min-variance")
 def min_variance(req: MinVarianceRequest) -> dict[str, Any]:

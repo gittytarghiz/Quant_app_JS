@@ -1,43 +1,40 @@
-from typing import Any, Optional, List
-from fastapi import APIRouter
-from pydantic import BaseModel, Field
-
-from api.core.utils import format_pnl, format_weights, normalize_details
+from fastapi import APIRouter, Query
 from portfolio_optimization.walkforward_user_weights import walkforward_user_weights
 
-router = APIRouter(prefix="/opt", tags=["opt"])
+router = APIRouter(prefix="/user_weights", tags=["Optimizers"])
 
-class UserWeightsRequest(BaseModel):
-    tickers: List[str]
-    static_weights: Optional[dict[str, float]] = None
-    start: str
-    end: str
-    dtype: str = "close"
-    interval: str = "1d"
-    rebalance: str = "monthly"
-    costs: Optional[dict[str, float]] = None
-    leverage: float = Field(default=1.0, ge=0.0, le=5.0)
+@router.get("/")
+def user_weights_api(
+    tickers: str,
+    start: str,
+    end: str,
+    weights: str,
+    dtype: str = "close",
+    interval: str = "1d",
+    rebalance: str = "monthly",
+    leverage: float = 1.0,
+    interest_rate: float = 0.04,
+):
+    """
+    Example:
+    /user_weights?tickers=AMZN,AAPL,NVDA&start=2020-01-01&end=2025-01-01&weights=AMZN:0.4,AAPL:0.3,NVDA:0.3
+    """
+    tickers_list = [t.strip().upper() for t in tickers.split(",") if t.strip()]
+    weights_dict = {}
+    for item in weights.split(","):
+        if ":" in item:
+            k, v = item.split(":")
+            weights_dict[k.strip().upper()] = float(v)
 
-@router.post("/user-weights")
-async def user_weights(req: UserWeightsRequest) -> dict[str, Any]:
-    """User-specified static portfolio weights — return PnL + Weights + Details"""
     result = walkforward_user_weights(
-        tickers=[t.upper() for t in req.tickers],
-        start=req.start,
-        end=req.end,
-        dtype=req.dtype,
-        interval=req.interval,
-        rebalance=req.rebalance,
-        costs=req.costs,
-        static_weights={k.upper(): float(v) for k, v in (req.static_weights or {}).items()},
-        weights_df=None,
-        normalize=True,
-        leverage=req.leverage,
-        interest_rate=req.interest_rate,
+        tickers=tickers_list,
+        start=start,
+        end=end,
+        weights=weights_dict,
+        dtype=dtype,
+        interval=interval,
+        rebalance=rebalance,
+        leverage=leverage,
+        interest_rate=interest_rate,
     )
-
-    return {
-        "pnl": format_pnl(result.get("pnl")),
-        "weights": format_weights(result.get("weights")),
-        "details": normalize_details(result.get("details")),
-    }
+    return result
